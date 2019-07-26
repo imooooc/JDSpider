@@ -6,7 +6,7 @@ from jdspider.loaders import *
 from jdspider.utils import get_config
 import requests
 class JdSpider(Spider):
-    name = 'jd'
+    name = 'jd '
     def __init__(self, name, *args, **kwargs):
         config = get_config(name)
         self.config = config
