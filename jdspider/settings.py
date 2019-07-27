@@ -98,3 +98,4 @@ MAX_PAGE = 3
 CHROMEDRIVER_SERVICE_ARGS = None
 MONGO_URI = 'localhost'
 MONGO_DB = 'jingdong'
+json_name = 'nonono'

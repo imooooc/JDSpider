@@ -10,7 +10,7 @@ from scrapy.http import HtmlResponse
 import time
 from jdspider.utils import get_config
 from operator import itemgetter
-
+import  jdspider.settings
 class  SeleniumMiddleware():
     def __init__(self, timeout=None, service_args=[]):
         self.logger = getLogger(__name__)
@@ -19,8 +19,6 @@ class  SeleniumMiddleware():
         self.browser.set_window_size(1400, 700)
         self.browser.set_page_load_timeout(self.timeout)
         self.wait = WebDriverWait(self.browser, self.timeout)
-
-
 
     def __del__(self):
         self.browser.close()
@@ -57,7 +55,6 @@ class  SeleniumMiddleware():
         if signal == 3:
             self.action_sendKeys(element_xpath=task.get('action').get('args'), text=task.get('action').get('text'))
 
-
     def task_collect(self, attrs):
         '''
         采集数据函数
@@ -71,7 +68,6 @@ class  SeleniumMiddleware():
             )
             item[attr_key] = ele.text
         return item
-
 
     def process_request(self, request, spider):
         #获取配置文件
@@ -92,14 +88,12 @@ class  SeleniumMiddleware():
                 attrs = task.get('attrs') #元素字典
                 if attrs:
                     ls.append(self.task_collect(attrs)) #将字典加入列表
+            #返回数据列表
             request.meta['ls'] = ls
             return HtmlResponse(url=request.url, body=self.browser.page_source, request=request, encoding='utf-8',
                             status=200)
         except TimeoutException:
             return HtmlResponse(url=request.url, request=request, status=500)
-
-
-
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -107,57 +101,5 @@ class  SeleniumMiddleware():
                    service_args=crawler.settings.get('CHROMEDRIVER_SERVICE_ARGS'))
 
 
-
-
-
-
-
-#
-# class SMiddleware():
-#     def __init__(self, timeout=None, service_args=[]):
-#         self.logger = getLogger(__name__)
-#         self.timeout = timeout
-#         self.browser = webdriver.Chrome(service_args=service_args)
-#         self.browser.set_window_size(1400, 700)
-#         self.browser.set_page_load_timeout(self.timeout)
-#         self.wait = WebDriverWait(self.browser, self.timeout)
-#
-#     def __del__(self):
-#         self.browser.close()
-#
-#     def process_request(self, request, spider):
-#         self.logger.debug('硒同学开始工作')
-#
-#         #time.sleep(1)
-#         try:
-#             self.browser.get(request.url)
-#
-#             #滚动页面
-#             for i in range(1, 10000, 15):
-#                 js = "document.documentElement.scrollTop={value}".format(value=i)
-#                 self.browser.execute_script(js)
-#
-#             #寻找元素
-#             next_page = self.wait.until(
-#                 EC.presence_of_element_located((By.XPATH, '//a[@class="pn-next"]'))
-#                 )
-#
-#             next_page.click()
-#             return HtmlResponse(url=self.browser.current_url, body=self.browser.page_source, request=request, encoding='utf-8',
-#                             status=200)
-#
-#         except TimeoutException:
-#             return HtmlResponse(url=request.url, request=request, status=500)
-#
-#
-#
-#     @classmethod
-#     def from_crawler(cls, crawler):
-#         return cls(timeout=crawler.settings.get('SELENIUM_TIMEOUT'),
-#                    service_args=crawler.settings.get('CHROMEDRIVER_SERVICE_ARGS'))
-#
-#
-#
-#
 
 
