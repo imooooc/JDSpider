@@ -1,1 +1,1 @@
-'''配置文件，将configs里的对应的json文件写入到Spider里'''from os.path import realpath, dirnameimport jsondef get_config(name):    path = dirname(realpath(__file__)) + '/configs/' + name + '.json'    with open(path, 'r', encoding='utf-8') as f:        return json.loads(f.read())
+'''配置文件，将configs里的对应的json文件写入到Spider里'''from os.path import realpath, dirnameimport jsondef get_config(name):    path = dirname(realpath(__file__)) + '/configs/' + name + '.json'    with open(path, 'r', encoding='utf-8') as f:        return json.loads(f.read())

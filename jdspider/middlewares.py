@@ -1,5 +1,4 @@
 # # -*- coding: utf-8 -*-
-import scrapy
 from selenium import webdriver
 from logging import  getLogger
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,8 +9,9 @@ from scrapy.http import HtmlResponse
 import time
 from jdspider.utils import get_config
 from operator import itemgetter
-import  jdspider.settings
-class  SeleniumMiddleware():
+
+
+class SeleniumMiddleware():
     def __init__(self, timeout=None, service_args=[]):
         self.logger = getLogger(__name__)
         self.timeout = timeout
@@ -48,26 +48,43 @@ class  SeleniumMiddleware():
         :return:
         '''
         signal = task.get('action').get('signal')
-        if signal == 1:
+        if signal == 0:
+            print('什么也不做')
+        elif signal == 1:
             self.action_scroll()
-        if signal == 2:
+        elif signal == 2:
             self.action_click(element_xpath=task.get('action').get('args'))
-        if signal == 3:
+        elif signal == 3:
             self.action_sendKeys(element_xpath=task.get('action').get('args'), text=task.get('action').get('text'))
 
     def task_collect(self, attrs):
         '''
         采集数据函数
         :param attrs: 一个字典类型的属性集合，键为字段名称，值为xpath路径
-        :return item: 一个字典类型的字段集合，键为字段名称，值为文本类型的字符串
+        :return item: 一个字典类型的字段集合，键为字段名称，值为文本类型的字符串 或返回字典列表
         '''
-        item = {}
-        for attr_key, attr_value in attrs.items():
-            ele = self.wait.until(
-                EC.presence_of_element_located((By.XPATH, attr_value))
-            )
-            item[attr_key] = ele.text
-        return item
+
+        if 'template_path' not in attrs:# 非列表型
+            item = {}
+            for attr_key, attr_value in attrs.items():
+                ele = self.wait.until(
+                    EC.presence_of_element_located((By.XPATH, attr_value))
+                )
+                item[attr_key] = ele.text
+            return item
+        else: # 列表型
+            item_ls = []
+            base_path = attrs.get('template_path')
+            parent_elements = self.browser.find_elements_by_xpath(base_path)
+            for ele in parent_elements:
+                item = {}
+                for attr_key, attr_value in attrs.items():
+                    if attr_key == 'template_path':
+                        continue
+                    item[attr_key] = ele.find_element_by_xpath('.' + attr_value).text
+                item_ls.append(item)
+            return item_ls
+
 
     def process_request(self, request, spider):
         #获取配置文件
@@ -87,12 +104,18 @@ class  SeleniumMiddleware():
                 #采集数据
                 attrs = task.get('attrs') #元素字典
                 if attrs:
-                    ls.append(self.task_collect(attrs)) #将字典加入列表
-            #返回数据列表
+                    res = self.task_collect(attrs)
+                    if isinstance(res, list):
+                        for item in res :
+                            ls.append(item)
+                    else :
+                        ls.append(res) #将字典加入列表
+            # 返回数据列表
             request.meta['ls'] = ls
             return HtmlResponse(url=request.url, body=self.browser.page_source, request=request, encoding='utf-8',
                             status=200)
         except TimeoutException:
+            print('Tiem out!')
             return HtmlResponse(url=request.url, request=request, status=500)
 
     @classmethod

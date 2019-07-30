@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 from scrapy import  Spider, Request
 from jdspider.items import *
-from jdspider.loaders import *
 from jdspider.utils import get_config
-from jdspider import settings
 class JdSpider(Spider):
     name = 'jd'
 
@@ -18,7 +16,6 @@ class JdSpider(Spider):
             elif start_urls.get('type') == 'dynamic':
                 # self.start_urls = list(eval('urls.' + start_urls.get('method'))(*start_urls.get('args', [])))
                 self.start_urls = []
-
         self.allowed_domains = config.get('allowed_domains')
         super(JdSpider, self).__init__(*args, **kwargs)
 
@@ -28,9 +25,8 @@ class JdSpider(Spider):
 
     def parse(self, response):
         ls = response.request.meta.get('ls')
-        item= childItem()
+        item = childItem()
         for i in ls:
             for key, value in i.items():
                 item[key] = value
-        yield item
-
+            yield item
