@@ -15,5 +15,5 @@ for task in config.get('tasks'):
     if attrs:
         for key in attrs.keys():
             fields.update({key: Field()}) #field = Field()
-childItem = type(class_name, (Item,), fields)  #{'bar':True}
+childItem = type(class_name, (Item,), fields)
 
